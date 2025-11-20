@@ -16,7 +16,8 @@ class ExchangeRateService {
                     AED: data.rates.AED,
                     CNY: data.rates.CNY,
                     CAD: data.rates.CAD,
-                    PEN: data.rates.PEN
+                    PEN: data.rates.PEN,
+                    BRL: data.rates.BRL
                 })
             },
             {
@@ -28,19 +29,21 @@ class ExchangeRateService {
                     AED: data.rates.AED,
                     CNY: data.rates.CNY,
                     CAD: data.rates.CAD,
-                    PEN: data.rates.PEN
+                    PEN: data.rates.PEN,
+                    BRL: data.rates.BRL
                 })
             },
             {
                 name: 'Frankfurter',
-                url: 'https://api.frankfurter.app/latest?from=USD&to=AED,CNY,CAD,PEN',
+                url: 'https://api.frankfurter.app/latest?from=USD&to=AED,CNY,CAD,PEN,BRL',
                 parser: (data) => ({
                     USD: 1,
                     ARS: null, // Frankfurter doesn't support ARS
                     AED: data.rates.AED,
                     CNY: data.rates.CNY,
                     CAD: data.rates.CAD,
-                    PEN: data.rates.PEN
+                    PEN: data.rates.PEN,
+                    BRL: data.rates.BRL
                 })
             }
         ];
@@ -145,6 +148,17 @@ class ExchangeRateService {
             throw new Error('No source provided PEN exchange rate');
         }
 
+        // Average BRL
+        const brlRates = validResults
+            .map(r => r.BRL)
+            .filter(rate => rate !== null && rate !== undefined);
+
+        if (brlRates.length > 0) {
+            averagedRates.BRL = brlRates.reduce((sum, rate) => sum + rate, 0) / brlRates.length;
+        } else {
+            throw new Error('No source provided BRL exchange rate');
+        }
+
         this.rates = averagedRates;
         this.lastUpdate = new Date();
 
@@ -188,7 +202,8 @@ class CurrencyConverter {
             AED: document.getElementById('aed'),
             CNY: document.getElementById('cny'),
             CAD: document.getElementById('cad'),
-            PEN: document.getElementById('pen')
+            PEN: document.getElementById('pen'),
+            BRL: document.getElementById('brl')
         };
         this.rateStatus = document.getElementById('rateStatus');
         this.rateInfo = document.getElementById('rateInfo');
@@ -299,6 +314,7 @@ class CurrencyConverter {
             • ${rates.CNY.toFixed(4)} CNY (Chinese Yuan)<br>
             • ${rates.CAD.toFixed(4)} CAD (Canadian Dollar)<br>
             • ${rates.PEN.toFixed(4)} PEN (Peruvian Sol)<br>
+            • ${rates.BRL.toFixed(4)} BRL (Brazilian Real)<br>
             <br>
             <small>Last updated: ${now}</small><br>
             <small>Data averaged from ${result.sourcesUsed} independent sources</small>

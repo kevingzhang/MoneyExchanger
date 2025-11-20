@@ -257,6 +257,10 @@ header {
     animation-delay: 600ms;
 }
 
+.currency-input-wrapper:nth-child(7) {
+    animation-delay: 700ms;
+}
+
 .currency-label {
     display: flex;
     align-items: center;

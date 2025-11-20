@@ -5,7 +5,7 @@ A premium currency conversion web application with real-time exchange rates.
 ## Features
 
 - 💱 **Real-time Exchange Rates**: Fetches rates from multiple APIs and averages them for accuracy
-- 🌍 **Multi-Currency Support**: Convert between USD, ARS, AED, and CNY
+- 🌍 **Multi-Currency Support**: Convert between 6 currencies (USD, ARS, AED, CNY, CAD, PEN)
 - 🎨 **Premium UI**: Glassmorphism design with smooth animations
 - 📱 **Fully Responsive**: Works beautifully on desktop and mobile
 - ⚡ **No Backend Required**: Pure frontend application
@@ -16,6 +16,8 @@ A premium currency conversion web application with real-time exchange rates.
 - 🇦🇷 **ARS** - Argentine Peso
 - 🇦🇪 **AED** - UAE Dirham
 - 🇨🇳 **CNY** - Chinese Yuan
+- 🇨🇦 **CAD** - Canadian Dollar
+- 🇵🇪 **PEN** - Peruvian Sol
 
 ## How to Use
 

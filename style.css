@@ -249,6 +249,14 @@ header {
     animation-delay: 400ms;
 }
 
+.currency-input-wrapper:nth-child(5) {
+    animation-delay: 500ms;
+}
+
+.currency-input-wrapper:nth-child(6) {
+    animation-delay: 600ms;
+}
+
 .currency-label {
     display: flex;
     align-items: center;

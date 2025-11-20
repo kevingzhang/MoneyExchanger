@@ -14,7 +14,9 @@ class ExchangeRateService {
                     USD: 1,
                     ARS: data.rates.ARS,
                     AED: data.rates.AED,
-                    CNY: data.rates.CNY
+                    CNY: data.rates.CNY,
+                    CAD: data.rates.CAD,
+                    PEN: data.rates.PEN
                 })
             },
             {
@@ -24,17 +26,21 @@ class ExchangeRateService {
                     USD: 1,
                     ARS: data.rates.ARS,
                     AED: data.rates.AED,
-                    CNY: data.rates.CNY
+                    CNY: data.rates.CNY,
+                    CAD: data.rates.CAD,
+                    PEN: data.rates.PEN
                 })
             },
             {
                 name: 'Frankfurter',
-                url: 'https://api.frankfurter.app/latest?from=USD&to=AED,CNY',
+                url: 'https://api.frankfurter.app/latest?from=USD&to=AED,CNY,CAD,PEN',
                 parser: (data) => ({
                     USD: 1,
                     ARS: null, // Frankfurter doesn't support ARS
                     AED: data.rates.AED,
-                    CNY: data.rates.CNY
+                    CNY: data.rates.CNY,
+                    CAD: data.rates.CAD,
+                    PEN: data.rates.PEN
                 })
             }
         ];
@@ -117,6 +123,28 @@ class ExchangeRateService {
             throw new Error('No source provided CNY exchange rate');
         }
 
+        // Average CAD
+        const cadRates = validResults
+            .map(r => r.CAD)
+            .filter(rate => rate !== null && rate !== undefined);
+
+        if (cadRates.length > 0) {
+            averagedRates.CAD = cadRates.reduce((sum, rate) => sum + rate, 0) / cadRates.length;
+        } else {
+            throw new Error('No source provided CAD exchange rate');
+        }
+
+        // Average PEN
+        const penRates = validResults
+            .map(r => r.PEN)
+            .filter(rate => rate !== null && rate !== undefined);
+
+        if (penRates.length > 0) {
+            averagedRates.PEN = penRates.reduce((sum, rate) => sum + rate, 0) / penRates.length;
+        } else {
+            throw new Error('No source provided PEN exchange rate');
+        }
+
         this.rates = averagedRates;
         this.lastUpdate = new Date();
 
@@ -158,7 +186,9 @@ class CurrencyConverter {
             USD: document.getElementById('usd'),
             ARS: document.getElementById('ars'),
             AED: document.getElementById('aed'),
-            CNY: document.getElementById('cny')
+            CNY: document.getElementById('cny'),
+            CAD: document.getElementById('cad'),
+            PEN: document.getElementById('pen')
         };
         this.rateStatus = document.getElementById('rateStatus');
         this.rateInfo = document.getElementById('rateInfo');
@@ -267,6 +297,8 @@ class CurrencyConverter {
             • ${rates.ARS.toFixed(2)} ARS (Argentine Peso)<br>
             • ${rates.AED.toFixed(4)} AED (UAE Dirham)<br>
             • ${rates.CNY.toFixed(4)} CNY (Chinese Yuan)<br>
+            • ${rates.CAD.toFixed(4)} CAD (Canadian Dollar)<br>
+            • ${rates.PEN.toFixed(4)} PEN (Peruvian Sol)<br>
             <br>
             <small>Last updated: ${now}</small><br>
             <small>Data averaged from ${result.sourcesUsed} independent sources</small>

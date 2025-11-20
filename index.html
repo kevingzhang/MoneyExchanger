@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="MoneyExchanger - Real-time currency converter for USD, ARS, and AED with live exchange rates from multiple sources">
+    <title>MoneyExchanger - Currency Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+    <div class="container">
+        <header>
+            <h1 class="logo">💱 MoneyExchanger</h1>
+            <p class="subtitle">Real-time currency conversion</p>
+        </header>
+
+        <main>
+            <div class="converter-card">
+                <div class="rate-status" id="rateStatus">
+                    <div class="loading-spinner"></div>
+                    <span>Loading exchange rates...</span>
+                </div>
+
+                <div class="currency-inputs" id="currencyInputs">
+                    <div class="currency-input-wrapper">
+                        <label for="usd" class="currency-label">
+                            <span class="currency-flag">🇺🇸</span>
+                            <span class="currency-code">USD</span>
+                            <span class="currency-name">US Dollar</span>
+                        </label>
+                        <input type="number" id="usd" class="currency-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="currency-input-wrapper">
+                        <label for="ars" class="currency-label">
+                            <span class="currency-flag">🇦🇷</span>
+                            <span class="currency-code">ARS</span>
+                            <span class="currency-name">Argentine Peso</span>
+                        </label>
+                        <input type="number" id="ars" class="currency-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="currency-input-wrapper">
+                        <label for="aed" class="currency-label">
+                            <span class="currency-flag">🇦🇪</span>
+                            <span class="currency-code">AED</span>
+                            <span class="currency-name">UAE Dirham</span>
+                        </label>
+                        <input type="number" id="aed" class="currency-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="currency-input-wrapper">
+                        <label for="cny" class="currency-label">
+                            <span class="currency-flag">🇨🇳</span>
+                            <span class="currency-code">CNY</span>
+                            <span class="currency-name">Chinese Yuan</span>
+                        </label>
+                        <input type="number" id="cny" class="currency-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="rate-info" id="rateInfo"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p class="footer-text">Exchange rates updated in real-time from multiple sources</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

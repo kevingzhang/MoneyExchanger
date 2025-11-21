@@ -1,4 +1,36 @@
 // ===================================
+// Cookie Utilities
+// ===================================
+
+const CookieManager = {
+    set(name, value, days = 7) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+        document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+    },
+
+    get(name) {
+        const nameEQ = name + '=';
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.indexOf(nameEQ) === 0) {
+                try {
+                    return JSON.parse(cookie.substring(nameEQ.length));
+                } catch (e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    },
+
+    delete(name) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+    }
+};
+
+// ===================================
 // Exchange Rate Service
 // ===================================
 
@@ -165,11 +197,40 @@ class ExchangeRateService {
         console.log('📊 Averaged rates:', averagedRates);
         console.log(`📈 Sources used: ${validResults.length}/${this.sources.length}`);
 
-        return {
+        // Save to cookie for future use
+        const cacheData = {
             rates: averagedRates,
+            lastUpdate: this.lastUpdate.toISOString(),
             sourcesUsed: validResults.length,
             totalSources: this.sources.length
         };
+        CookieManager.set('exchangeRates', cacheData, 7);
+        console.log('💾 Saved rates to cookie');
+
+        return {
+            rates: averagedRates,
+            lastUpdate: this.lastUpdate,
+            sourcesUsed: validResults.length,
+            totalSources: this.sources.length
+        };
+    }
+
+    loadFromCache() {
+        const cached = CookieManager.get('exchangeRates');
+        if (cached && cached.rates) {
+            this.rates = cached.rates;
+            this.lastUpdate = new Date(cached.lastUpdate);
+            console.log('📦 Loaded rates from cookie cache');
+            console.log('🕐 Cache timestamp:', this.lastUpdate);
+            return {
+                rates: cached.rates,
+                lastUpdate: this.lastUpdate,
+                sourcesUsed: cached.sourcesUsed,
+                totalSources: cached.totalSources,
+                fromCache: true
+            };
+        }
+        return null;
     }
 
     convert(amount, fromCurrency, toCurrency) {
@@ -214,20 +275,62 @@ class CurrencyConverter {
 
     async init() {
         try {
-            // Fetch exchange rates
+            // Try to load from cache first
+            const cachedResult = this.service.loadFromCache();
+
+            if (cachedResult) {
+                // Show cached rates immediately
+                this.showSuccess(cachedResult, true);
+                this.displayRateInfo(cachedResult);
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Set initial value
+                this.inputs.USD.value = '100';
+                this.handleInput('USD');
+
+                // Fetch fresh rates in background
+                console.log('🔄 Fetching fresh rates in background...');
+                this.fetchFreshRates();
+            } else {
+                // No cache available, show loading and fetch
+                // Fetch exchange rates
+                const result = await this.service.fetchRates();
+                this.showSuccess(result);
+                this.displayRateInfo(result);
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Set initial value
+                this.inputs.USD.value = '100';
+                this.handleInput('USD');
+            }
+
+        } catch (error) {
+            this.showError(error.message);
+        }
+    }
+
+    async fetchFreshRates() {
+        try {
             const result = await this.service.fetchRates();
             this.showSuccess(result);
             this.displayRateInfo(result);
 
-            // Setup event listeners
-            this.setupEventListeners();
-
-            // Set initial value
-            this.inputs.USD.value = '100';
-            this.handleInput('USD');
-
+            // Update all currency values with new rates
+            // Find which input has a value
+            Object.keys(this.inputs).forEach(currency => {
+                const value = parseFloat(this.inputs[currency].value);
+                if (!isNaN(value) && value > 0) {
+                    this.handleInput(currency);
+                    return;
+                }
+            });
         } catch (error) {
-            this.showError(error.message);
+            console.error('Failed to fetch fresh rates:', error);
+            // Keep using cached rates
         }
     }
 
@@ -287,11 +390,13 @@ class CurrencyConverter {
         });
     }
 
-    showSuccess(result) {
+    showSuccess(result, isCache = false) {
         this.rateStatus.className = 'rate-status success';
+        const cacheIndicator = isCache ? '📦 ' : '✓ ';
+        const cacheText = isCache ? '(using cached rates)' : '(live from API)';
         this.rateStatus.innerHTML = `
-            <span>✓</span>
-            <span>Exchange rates loaded successfully (${result.sourcesUsed}/${result.totalSources} sources)</span>
+            <span>${cacheIndicator}</span>
+            <span>Exchange rates loaded ${cacheText} - ${result.sourcesUsed}/${result.totalSources} sources</span>
         `;
     }
 
@@ -305,9 +410,33 @@ class CurrencyConverter {
 
     displayRateInfo(result) {
         const rates = result.rates;
-        const now = new Date().toLocaleString();
+        const timestamp = result.lastUpdate || new Date();
+        const formattedTime = timestamp.toLocaleString();
+
+        // Calculate time ago
+        const now = new Date();
+        const diffMs = now - timestamp;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        let timeAgo;
+        if (diffMins < 1) {
+            timeAgo = 'just now';
+        } else if (diffMins < 60) {
+            timeAgo = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        } else if (diffHours < 24) {
+            timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        } else {
+            timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
 
         this.rateInfo.innerHTML = `
+            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <strong style="font-size: 1.1em;">📅 Rate Timestamp</strong><br>
+                <span style="font-size: 1.05em; color: var(--accent-primary);">${formattedTime}</span><br>
+                <small style="opacity: 0.8;">(${timeAgo})</small>
+            </div>
             <strong>Current Exchange Rates (1 USD =)</strong><br>
             • ${rates.ARS.toFixed(2)} ARS (Argentine Peso)<br>
             • ${rates.AED.toFixed(4)} AED (UAE Dirham)<br>
@@ -316,7 +445,6 @@ class CurrencyConverter {
             • ${rates.PEN.toFixed(4)} PEN (Peruvian Sol)<br>
             • ${rates.BRL.toFixed(4)} BRL (Brazilian Real)<br>
             <br>
-            <small>Last updated: ${now}</small><br>
             <small>Data averaged from ${result.sourcesUsed} independent sources</small>
         `;
     }

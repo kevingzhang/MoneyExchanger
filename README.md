@@ -9,6 +9,7 @@ A premium currency conversion web application with real-time exchange rates.
 - 🎨 **Premium UI**: Glassmorphism design with smooth animations
 - 📱 **Fully Responsive**: Works beautifully on desktop and mobile
 - 📲 **Mobile Optimized**: Numeric keyboard on mobile devices for easy input
+- 🍪 **Smart Caching**: Saves exchange rates to cookies for instant loading on next visit
 - ⚡ **No Backend Required**: Pure frontend application
 
 ## Supported Currencies
